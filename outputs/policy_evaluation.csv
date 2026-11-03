@@ -1,0 +1,3 @@
+Chunking,Total chunks,Document retrieval,Expected fact,Fallback
+40 WORDS WITH 10-WORD OVERLAP,15,12/12,12/12,2/2
+40 WORDS WITH ZERO OVERLAP,13,12/12,10/12,2/2
