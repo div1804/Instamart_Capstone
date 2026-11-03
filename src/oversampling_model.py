@@ -5,7 +5,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.utils import resample
 from sklearn.metrics import (
     accuracy_score,
@@ -14,6 +14,7 @@ from sklearn.metrics import (
     f1_score,
     classification_report
 )
+
 
 # 1. Load dataset
 dataset = pd.read_csv("outputs/lapse_dataset.csv")
@@ -94,14 +95,12 @@ preprocessor = ColumnTransformer([
     ("categorical", categorical_pipeline, categorical_features)
 ])
 
-# 8. Selected Random Forest model
+# 8. Selected Logistic Regression model
 model = Pipeline([
     ("preprocessor", preprocessor),
-    ("model", RandomForestClassifier(
-        n_estimators=100,
-        max_depth=8,
-        min_samples_leaf=10,
-        random_state=42
+    ("model", LogisticRegression(
+        C=100,
+        max_iter=1000
     ))
 ])
 
@@ -111,12 +110,16 @@ model.fit(X_train_balanced, y_train_balanced)
 # 10. Evaluate on original test data
 y_pred = model.predict(X_test)
 
-print("\nOVERSAMPLED RANDOM FOREST RESULTS")
+print("\nOVERSAMPLED LOGISTIC REGRESSION RESULTS")
 print("Accuracy:", round(accuracy_score(y_test, y_pred), 4))
 print("Precision:", round(precision_score(y_test, y_pred), 4))
 print("Recall:", round(recall_score(y_test, y_pred), 4))
 print("F1 Score:", round(f1_score(y_test, y_pred), 4))
-
+print(classification_report(
+    y_test,
+    y_pred,
+    zero_division=0
+))
 print("\nCLASSIFICATION REPORT")
 print(classification_report(y_test, y_pred))
 

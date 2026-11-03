@@ -8,7 +8,7 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.utils import resample
+
 
 # 1. Load dataset
 dataset = pd.read_csv("outputs/lapse_dataset.csv")
@@ -65,32 +65,8 @@ model = Pipeline([
     ))
 ])
 
-# 5. Oversample lapsed customers in training data only
-training_data = X_train.copy()
-training_data["lapsed"] = y_train.values
-
-majority = training_data[training_data["lapsed"] == 0]
-minority = training_data[training_data["lapsed"] == 1]
-
-minority_oversampled = resample(
-    minority,
-    replace=True,
-    n_samples=len(majority),
-    random_state=42
-)
-
-balanced_data = pd.concat(
-    [majority, minority_oversampled]
-)
-
-X_balanced = balanced_data.drop(columns=["lapsed"])
-y_balanced = balanced_data["lapsed"]
-
-print("Balanced training counts:")
-print(y_balanced.value_counts())
-
-# 6. Train final model
-model.fit(X_balanced, y_balanced)
+# 5. Train final selected model on original training data
+model.fit(X_train, y_train)
 
 # 7. Generate predictions before saving
 predictions_before = model.predict(X_test)

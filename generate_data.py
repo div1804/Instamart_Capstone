@@ -95,30 +95,14 @@ T={
 "fraud":["There is an unauthorized transaction on my card linked to order {o}. I did not place it. Call {p}.","Someone hacked my account and used my wallet balance. This is fraud, contact {e}.","I was charged for order {o} that I never made, it looks like fraud on my account. Call {p}."]}
 order_by_cust={}
 for r in out: order_by_cust.setdefault(r[1],r[0])
-eligible = sorted(order_by_cust)
-tickets = []
-cats = list(T)
-
-for n in range(1, 157):
-    cat = cats[(n-1) % 4]
-    cid = rng.choice(eligible)
-
-    txt = rng.choice(T[cat]).format(
-        o=order_by_cust[cid],
-        e=f"customer{n}@example.invalid",
-        p="0000000000"
-    )
-
-    tickets.append([f"T{n:04d}", cid, order_by_cust[cid], txt, cat])
-
-fill = "The same problem keeps happening and nobody has given me a clear answer yet. "
-
-for n in range(157, 161):
-    tickets.append([f"T{n:04d}", rng.choice(eligible), "", "", "none"])
-
-for n in range(161, 165):
-    tickets.append([f"T{n:04d}", rng.choice(eligible), "", ("My delivery was late. " + fill*40).strip(), "delivery"])
-
+eligible=sorted(order_by_cust); tickets=[]; cats=list(T)
+for n in range(1,157):
+    cat=cats[(n-1)%4]; cid=rng.choice(eligible)
+    txt=rng.choice(T[cat]).format(o=order_by_cust[cid],e=f"user{n}@example.com",p=str(rng.choice("6789"))+"".join(rng.choice("0123456789") for _ in range(9)))
+    tickets.append([f"T{n:04d}",cid,order_by_cust[cid],txt,cat])
+fill="The same problem keeps happening and nobody has given me a clear answer yet. "
+for n in range(157,161): tickets.append([f"T{n:04d}",rng.choice(eligible),"","","none"])
+for n in range(161,165): tickets.append([f"T{n:04d}",rng.choice(eligible),"",("My delivery was late. "+fill*40).strip(),"delivery"])
 rng.shuffle(tickets)
 write_csv("tickets.csv",["ticket_id","customer_id","order_id","text","true_category"],tickets)
 

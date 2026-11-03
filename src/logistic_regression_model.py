@@ -12,7 +12,8 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
     f1_score,
-    classification_report
+    classification_report,
+    confusion_matrix
 )
 
 print("INSTAMART PART B - LOGISTIC REGRESSION")
@@ -128,5 +129,32 @@ print(classification_report(
     y_pred,
     zero_division=0
 ))
+# Step 15: Display Logistic Regression coefficients
 
+feature_names = best_model.named_steps["preprocessor"].get_feature_names_out()
+
+coefficients = best_model.named_steps["model"].coef_[0]
+
+coefficient_table = pd.DataFrame({
+    "Feature": feature_names,
+    "Coefficient": coefficients
+})
+
+coefficient_table["Absolute_Value"] = coefficient_table["Coefficient"].abs()
+
+coefficient_table = coefficient_table.sort_values(
+    by="Absolute_Value",
+    ascending=False
+)
+
+print("\nTOP 3 LOGISTIC REGRESSION COEFFICIENTS")
+
+print(
+    coefficient_table[
+        ["Feature", "Coefficient"]
+    ].head(3).to_string(index=False)
+)
+print("\nCONFUSION MATRIX")
+print(confusion_matrix(y_test, y_pred))
 print("\nLOGISTIC REGRESSION COMPLETED!")
+

@@ -62,7 +62,7 @@ actually_lapsed_count = top_10["actually_lapsed"].sum()
 
 # 11. Save retention list
 top_10.to_csv(
-    "outputs/premium_retention_list.csv",
+    "outputs/retention_list.csv",
     index=False
 )
 
@@ -81,4 +81,4 @@ print("Actually Lapsed Customers in Top 10:",
       actually_lapsed_count)
 
 print("\nRetention list saved successfully!")
-print("File: outputs/premium_retention_list.csv")
+print("File: outputs/retention_list.csv")

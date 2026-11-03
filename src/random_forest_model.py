@@ -12,7 +12,8 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
     f1_score,
-    classification_report
+    classification_report,
+    confusion_matrix
 )
 
 print("INSTAMART PART B - RANDOM FOREST")
@@ -134,3 +135,5 @@ print(classification_report(
 ))
 
 print("\nRANDOM FOREST COMPLETED!")
+print("\nCONFUSION MATRIX")
+print(confusion_matrix(y_test, y_pred))
