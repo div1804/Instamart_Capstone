@@ -1,0 +1,8 @@
+scenario_id,user_message,expected_outcome,order_id
+S1,Please check refund eligibility for order ORD-100048.,REFUND,ORD-100048
+S2,Please check refund eligibility for order ORD-100067.,REFUND,ORD-100067
+S3,Please check refund eligibility for order ORD-100145.,ESCALATE,ORD-100145
+S4,Please check refund eligibility for order ORD-100001.,DENIED,ORD-100001
+S5,Please check refund eligibility for order ORD-100020.,DENIED,ORD-100020
+S6,Please check refund eligibility for order ORD-999999.,NOT_FOUND,ORD-999999
+S7,[LOOP] Refund order ORD-100048.,FALLBACK_MAX_ITERATIONS,ORD-100048

@@ -1,0 +1,50 @@
+{
+    "run_id": "S6_9d4b51a0",
+    "scenario_id": "S6",
+    "messages": [
+        {
+            "role": "system",
+            "content": "\nYou are an AGENT for Instamart refund support.\n\nFollow these refund rules carefully:\n\n1. Always check the order using get_order.\n2. Use search_policy to retrieve the refund policy.\n3. Only completed orders are eligible for refunds.\n4. Orders delivered within 45 minutes receive zero refund.\n5. Orders delivered after 45 minutes qualify for a full refund.\n6. Refund requests must be within the 7-day request window.\n7. Refunds above INR 1000 must be escalated to a human.\n8. Never automatically issue a refund above INR 1000.\n9. Use issue_refund only when the refund is eligible\n   and does not exceed INR 1000.\n10. If an order is missing, explain that it was not found.\n11. Never invent order details or refund amounts.\n12. If unsure, stop safely and request human assistance.\n"
+        },
+        {
+            "role": "user",
+            "content": "Please check refund eligibility for order ORD-999999."
+        },
+        {
+            "role": "assistant",
+            "content": null,
+            "tool_calls": [
+                {
+                    "id": "call_1",
+                    "name": "get_order",
+                    "arguments": {
+                        "order_id": "ORD-999999"
+                    }
+                }
+            ]
+        },
+        {
+            "role": "tool",
+            "tool_call_id": "call_1",
+            "name": "get_order",
+            "content": "{\"error\": \"order not found\"}"
+        }
+    ],
+    "tokens_used": 189,
+    "llm_calls": 1,
+    "steps": [
+        {
+            "tool": "get_order",
+            "args": {
+                "order_id": "ORD-999999"
+            },
+            "observation": {
+                "error": "order not found"
+            }
+        }
+    ],
+    "step_number": 1,
+    "tools_executed": [
+        "get_order"
+    ]
+}

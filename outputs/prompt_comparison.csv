@@ -1,0 +1,3 @@
+prompt,classified_tickets,accuracy_percent,total_tokens,tokens_per_classified_ticket
+zero_shot,147,85.71428571428571,16576,112.76190476190476
+few_shot,147,100.0,27340,185.98639455782313
