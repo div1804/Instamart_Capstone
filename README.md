@@ -157,6 +157,21 @@ Seven SQL queries were executed successfully to analyse sales, customers, produc
 
 **Validation result:** All 10 database checkpoints passed, including record counts, unique IDs, missing-value checks, and completed-order revenue.
 
+
+### SQL Findings and Window-Function Interpretation
+
+The seven SQL queries cover filtering with `WHERE` and `HAVING`, three-table joins, scalar subqueries, `LEFT JOIN`, common table expressions, window functions, and running totals.
+
+- Q1 returned 30 qualifying customers.
+- Q2 returned 30 city/category revenue combinations; Bengaluru Electronics was the largest combination at **₹233,909.45**.
+- Q3 returned 11 products priced above the product-table average.
+- Q4 returned 25 customers without completed orders.
+- Q5 returned 550 customers whose total completed-order spend exceeded the customer average of **₹2,552.06**.
+- Q6 calculated customer spending ranks within each city. `RANK()` gives tied customers the same rank and skips the next rank; `DENSE_RANK()` gives tied customers the same rank without a gap; `ROW_NUMBER()` always assigns a unique sequential number. There are **8 rows** where `RANK()` differs from `ROW_NUMBER()` because of ties.
+- Q7 returned 183 daily records. The final cumulative completed-order revenue is **₹2,998,668.80**, matching the cleaned completed-order total.
+
+The Q6 query intentionally displays the ranking for all customers so the three window functions can be compared, rather than filtering the result to only the top customer in each city.
+
 ## 4. Part B – Customer Intelligence and Lapse Prediction
 
 ### Objective
@@ -244,6 +259,48 @@ Its three most important features were frequency, monetary value, and recency, t
 
 The retention list is an illustrative prioritisation output. Its premium-customer flag is based on a post-hoc segment definition and should not be interpreted as a fully leakage-free prospective targeting evaluation.
 
+
+### Model Selection and Evaluation Details
+
+The stratified split produced **924 training rows** and **232 test rows**. The training labels initially contained 570 non-lapsed and 354 lapsed customers.
+
+Five-fold `GridSearchCV` used F1 scoring:
+
+| Model | Search space | Selected parameters | Best CV F1 |
+|---|---|---|---:|
+| Logistic Regression | `C = [0.01, 0.1, 1, 10, 100]` | `C = 100` | 0.6506 |
+| Random Forest | `max_depth = [3, 5, 8]`; `min_samples_leaf = [5, 10, 20]` | `max_depth = 8`; `min_samples_leaf = 10` | 0.6811 |
+
+Test-set confusion matrices use rows as actual classes (`0` not lapsed, `1` lapsed) and columns as predicted classes in the same order:
+
+**Logistic Regression**
+
+| Actual \\ Predicted | 0 | 1 |
+|---|---:|---:|
+| 0 – Not lapsed | 111 | 32 |
+| 1 – Lapsed | 31 | 58 |
+
+**Random Forest**
+
+| Actual \\ Predicted | 0 | 1 |
+|---|---:|---:|
+| 0 – Not lapsed | 113 | 30 |
+| 1 – Lapsed | 31 | 58 |
+
+The five largest Random Forest feature importances from the saved model are:
+
+| Feature | Importance |
+|---|---:|
+| Frequency | 0.2796 |
+| Monetary value | 0.2712 |
+| Recency | 0.1151 |
+| Average delivery time | 0.0613 |
+| Cancellation rate | 0.0523 |
+
+The three largest absolute Logistic Regression coefficients were negative for frequency, the Electronics favourite-category indicator, and the Grocery favourite-category indicator. A negative coefficient corresponds to lower model log-odds for the lapsed class, relative to the encoded reference levels and other model features; it is not evidence of causation.
+
+For oversampling, only the training data was balanced: the original training counts of 570 non-lapsed and 354 lapsed customers became 570 in each class after resampling. The untouched test set was used for evaluation. Oversampled Logistic Regression improved lapsed-class recall to **80.90%** and F1 to **0.6890**, with precision **60.00%**. This illustrates the recall/precision trade-off when addressing class imbalance.
+
 ## 5. Part C – Privacy-Aware Support Ticket Triage
 
 ### Objective
@@ -311,6 +368,32 @@ Tickets are routed based on classification and customer segment.
 The final triage results are stored in:
 
 `outputs/triage_results.csv`
+
+
+### Final Routing and Token-Budget Results
+
+The final 164-row triage output contained these statuses:
+
+| Status | Tickets |
+|---|---:|
+| `classified_json` | 135 |
+| `classified_keyword` | 12 |
+| `flagged_invalid_output` | 9 |
+| `flagged_long` | 4 |
+| `skipped_empty` | 4 |
+
+Final routing counts were:
+
+| Route | Tickets |
+|---|---:|
+| `support_queue` | 102 |
+| `security_team` | 34 |
+| `human_review` | 17 |
+| `premium_desk` | 11 |
+
+There were 119 NORMAL-priority and 45 HIGH-priority tickets.
+
+The zero-shot budget demonstration was configured with a **6,000-token** budget and recorded **6,047 tokens** in total, an overrun of 47 tokens. The pipeline checks the accumulated total before each model call; the final response can therefore take the recorded total slightly beyond the configured threshold. The measured total is reported rather than presented as an exact hard cap.
 
 ## 6. Part D – Policy RAG and ReAct Refund Agent
 
@@ -389,6 +472,13 @@ A simulated interruption was recovered successfully. The resumed execution conti
 Agent execution details are stored in:
 
 `outputs/agent_runs.jsonl`
+
+
+### ReAct Versus Plan-and-Execute
+
+The implemented agent uses ReAct: it alternates between model reasoning and tool execution, then uses each tool observation to decide the next action. Across the seven recorded scenarios, the ReAct run used **30 model calls and 11,299 tokens**. Scenario S1 completed with four tool executions in five model calls and 1,650 tokens. The scenarios also tested unexpected or limiting observations, including a cancelled order (S5), an order not found (S6), and the maximum-iteration fallback (S7).
+
+A separate Plan-and-Execute agent was not implemented or benchmarked in this project, so no Plan-and-Execute model-call or token figures are claimed. Qualitatively, a plan-first approach could reduce repeated planning for predictable workflows, but it may need replanning when a tool returns an unexpected result. ReAct was retained because refund eligibility, order status, policy retrieval, and approval thresholds must be checked sequentially, and each observation can change the safe next action. A measured head-to-head benchmark remains future work.
 
 ## 7. Limitations and Next Steps
 
